@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="qr_code_view_form" model="ir.ui.view">
+        <field name="name">qr.code.form</field>
+        <field name="model">qr.code</field>
+        <field name="arch" type="xml">
+            <form string="QR Code">
+                <header>
+                    <button name="action_publish" string="Publish" type="object"
+                            class="btn-primary"
+                            invisible="state == 'published'"/>
+                    <button name="action_close" string="Close" type="object"
+                            invisible="state != 'published'"/>
+                    <button name="action_back_to_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'closed'"/>
+                    <button name="action_regenerate_token"
+                            string="Regenerate Link" type="object"
+                            confirm="Existing QR codes and links will stop working. Continue?"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,published,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_public_page" type="object"
+                                class="oe_stat_button" icon="fa-globe"
+                                invisible="state != 'published'">
+                            <div class="o_stat_info">
+                                <field name="view_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Views</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            invisible="active"/>
+                    <widget name="web_ribbon" title="Expired" bg_color="bg-warning"
+                            invisible="not is_expired or not active"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Catálogo 2026"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="qr_type" widget="radio" options="{'horizontal': True}"/>
+                            <field name="target_url" invisible="qr_type != 'url'" required="qr_type == 'url'"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date_expiration"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                            <field name="is_expired" invisible="1"/>
+                            <field name="attachment_count" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="public_url" widget="CopyClipboardChar"
+                                   invisible="state == 'draft'"/>
+                            <field name="last_view_date"
+                                   invisible="not last_view_date"/>
+                        </group>
+                    </group>
+
+                    <group string="QR Code" invisible="state == 'draft'">
+                        <group>
+                            <field name="qr_image" widget="image"
+                                   options="{'size': [150, 150]}" nolabel="1"/>
+                        </group>
+                        <group>
+                            <div colspan="2">
+                                <p class="text-muted">
+                                    Scan this code to open the public page with
+                                    the files of this publication.
+                                </p>
+                                <button name="action_download_qr" type="object"
+                                        string="Download QR (PNG)"
+                                        class="btn btn-secondary"
+                                        icon="fa-download"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <notebook invisible="qr_type == 'url'">
+                        <page string="Files" name="files">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"
+                                   string="Upload files"/>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description"
+                                   placeholder="Optional text shown on the public page..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="qr_code_view_tree" model="ir.ui.view">
+        <field name="name">qr.code.tree</field>
+        <field name="model">qr.code</field>
+        <field name="arch" type="xml">
+            <tree string="QR Codes">
+                <field name="name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="attachment_count" string="Files"/>
+                <field name="view_count"/>
+                <field name="date_expiration" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'published'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state == 'closed'"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qr_code_view_kanban" model="ir.ui.view">
+        <field name="name">qr.code.kanban</field>
+        <field name="model">qr.code</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="state"/>
+                <field name="qr_image"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record_has_image_fill">
+                            <div class="o_kanban_image_fill_left"
+                                 t-attf-style="background-image:url('#{kanban_image('qr.code', 'qr_image', record.id.raw_value)}')"/>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <div class="text-muted">
+                                    <field name="attachment_count"/> file(s) ·
+                                    <field name="view_count"/> view(s)
+                                </div>
+                                <div class="mt-1">
+                                    <field name="state" widget="label_selection"
+                                           options="{'classes': {'draft': 'default', 'published': 'success', 'closed': 'muted'}}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="qr_code_view_search" model="ir.ui.view">
+        <field name="name">qr.code.search</field>
+        <field name="model">qr.code</field>
+        <field name="arch" type="xml">
+            <search string="QR Codes">
+                <field name="name"/>
+                <field name="user_id"/>
+                <separator/>
+                <filter string="My Publications" name="my_publications"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter string="Draft" name="filter_draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Published" name="filter_published"
+                        domain="[('state', '=', 'published')]"/>
+                <filter string="Expired" name="filter_expired"
+                        domain="[('is_expired', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="filter_inactive"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Responsible" name="group_user"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter string="Creation Date" name="group_create_date"
+                            context="{'group_by': 'create_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="qr_code_action" model="ir.actions.act_window">
+        <field name="name">QR Codes</field>
+        <field name="res_model">qr.code</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first QR publication
+            </p>
+            <p>
+                Upload files of any type, publish them and share the generated
+                QR code: it opens a web page where the files can be viewed
+                online.
+            </p>
+        </field>
+    </record>
+
+</odoo>

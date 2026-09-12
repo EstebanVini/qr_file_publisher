@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Public landing page reached by the QR code -->
+    <template id="portal_qr_publication" name="QR Publication">
+        <t t-call="portal.frontend_layout">
+            <t t-set="no_breadcrumbs" t-value="True"/>
+            <div id="wrap" class="o_qr_public_page">
+                <div class="container py-4 py-lg-5">
+
+                    <div class="mb-4">
+                        <h1 class="mb-2" t-out="publication.name"/>
+                        <div t-if="publication.description"
+                             class="text-muted o_qr_description"
+                             t-out="publication.description"/>
+                        <small class="text-muted">
+                            <i class="fa fa-paperclip me-1" role="img"/>
+                            <t t-out="len(files)"/> archivo(s)
+                        </small>
+                    </div>
+
+                    <div t-if="not files" class="alert alert-info" role="status">
+                        Esta publicación todavía no tiene archivos.
+                    </div>
+
+                    <div class="row g-3">
+                        <t t-foreach="files" t-as="file">
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <div class="card h-100 shadow-sm o_qr_file_card">
+
+                                    <!-- Inline preview -->
+                                    <div t-if="file['kind'] == 'image'"
+                                         class="o_qr_preview bg-light">
+                                        <a t-att-href="file['view_url']" target="_blank">
+                                            <img t-att-src="file['view_url']"
+                                                 t-att-alt="file['name']"
+                                                 loading="lazy"
+                                                 class="o_qr_preview_media"/>
+                                        </a>
+                                    </div>
+                                    <div t-elif="file['kind'] == 'video'"
+                                         class="o_qr_preview bg-dark">
+                                        <video class="o_qr_preview_media" controls="controls"
+                                               preload="metadata">
+                                            <source t-att-src="file['view_url']"
+                                                    t-att-type="file['mimetype']"/>
+                                        </video>
+                                    </div>
+                                    <div t-elif="file['kind'] == 'audio'"
+                                         class="p-3 bg-light">
+                                        <audio class="w-100" controls="controls"
+                                               preload="metadata">
+                                            <source t-att-src="file['view_url']"
+                                                    t-att-type="file['mimetype']"/>
+                                        </audio>
+                                    </div>
+                                    <div t-elif="file['kind'] == 'pdf'"
+                                         class="o_qr_preview bg-light">
+                                        <iframe t-att-src="file['view_url']"
+                                                t-att-title="file['name']"
+                                                class="o_qr_preview_media"
+                                                loading="lazy"/>
+                                    </div>
+                                    <div t-else=""
+                                         class="o_qr_preview bg-light d-flex align-items-center justify-content-center">
+                                        <i class="fa fa-file-o fa-3x text-muted" role="img"/>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate"
+                                            t-att-title="file['name']"
+                                            t-out="file['name']"/>
+                                        <p class="card-text small text-muted mb-3">
+                                            <t t-out="file['size']"/> ·
+                                            <t t-out="file['mimetype']"/>
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a t-att-href="file['view_url']"
+                                               target="_blank"
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fa fa-eye me-1" role="img"/> Ver
+                                            </a>
+                                            <a t-att-href="file['download_url']"
+                                               class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa fa-download me-1" role="img"/> Descargar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Error page: unknown, unpublished or expired token -->
+    <template id="portal_qr_error" name="QR Publication Error">
+        <t t-call="portal.frontend_layout">
+            <t t-set="no_breadcrumbs" t-value="True"/>
+            <div id="wrap">
+                <div class="container py-5 text-center">
+                    <i class="fa fa-qrcode fa-4x text-muted mb-3" role="img"/>
+                    <h1 class="h3">Enlace no disponible</h1>
+                    <p class="text-muted" t-out="error_message"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

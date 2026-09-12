@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_qr_file_publisher_root"
+              name="Creador de Códigos QR"
+              web_icon="qr_file_publisher,static/description/icon.png"
+              sequence="95"
+              groups="qr_file_publisher.group_qr_code_user"/>
+
+    <menuitem id="menu_qr_code"
+              name="Códigos QR"
+              parent="menu_qr_file_publisher_root"
+              action="qr_code_action"
+              sequence="10"/>
+
+</odoo>

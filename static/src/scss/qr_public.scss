@@ -1,0 +1,29 @@
+.o_qr_public_page {
+    .o_qr_file_card {
+        overflow: hidden;
+    }
+
+    .o_qr_preview {
+        height: 200px;
+        overflow: hidden;
+        display: block;
+
+        a {
+            display: block;
+            height: 100%;
+        }
+    }
+
+    .o_qr_preview_media {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border: 0;
+        display: block;
+    }
+
+    .o_qr_description img {
+        max-width: 100%;
+        height: auto;
+    }
+}
