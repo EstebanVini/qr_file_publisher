@@ -62,6 +62,44 @@ El parámetro de sistema ``web.base.url`` debe apuntar al dominio público real
 ``localhost``. Recomendado también activar ``web.base.url.freeze`` para que
 Odoo no lo sobrescriba al iniciar sesión desde otra URL.
 
+Solución de problemas
+======================
+
+**Al subir un archivo aparece**
+``SyntaxError: Unexpected token '<', "<html>..." is not valid JSON``
+  El widget de subida (``many2many_binary``) espera una respuesta JSON del
+  servidor. Si en su lugar recibe una página HTML, el fallo **no está en
+  este módulo** (no implementa ningún endpoint propio de subida; usa el
+  controlador estándar de adjuntos de Odoo), sino en una capa delante de
+  Odoo que rechaza la petición antes de que llegue a la aplicación. La
+  causa más habitual es el límite de tamaño del proxy inverso:
+
+  * **Nginx**: por defecto ``client_max_body_size`` es 1 MB. Un adjunto de
+    más de 1 MB hace que nginx devuelva su propia página de error 413 en
+    HTML en lugar de reenviar la petición a Odoo. Solución: en el bloque
+    ``server {}`` o ``location {}`` que expone Odoo, añade (ajustando al
+    tamaño máximo de archivo que quieras permitir)::
+
+        client_max_body_size 64m;
+
+    y recarga nginx (``nginx -s reload``).
+  * Con otro proxy (Apache, Cloudflare, balanceador, etc.) revisa el límite
+    equivalente (``LimitRequestBody`` en Apache, límite de subida en
+    Cloudflare...).
+  * También puede deberse a un timeout del proxy (``proxy_read_timeout`` /
+    ``proxy_send_timeout`` en nginx) si el archivo es grande y la subida
+    tarda más que lo configurado.
+
+  Para confirmar la causa exacta: repite la subida con las herramientas de
+  desarrollador del navegador abiertas (pestaña *Network*), localiza la
+  petición fallida (``/web/binary/upload_attachment`` o
+  ``/mail/attachment/upload``) y mira su código de estado HTTP:
+
+  * ``413`` → límite de tamaño del proxy (ver arriba).
+  * ``502`` / ``504`` → timeout o error del proxy.
+  * ``500`` con un *traceback* de Odoo → revisa el log del servidor Odoo en
+    el momento de la subida; en ese caso sí sería un error de la aplicación.
+
 Contenido del módulo
 ====================
 
