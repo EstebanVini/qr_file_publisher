@@ -40,6 +40,9 @@ Funcionalidades principales:
         'web.assets_frontend': [
             'qr_file_publisher/static/src/scss/qr_public.scss',
         ],
+        'web.assets_backend': [
+            'qr_file_publisher/static/src/js/file_upload_error.js',
+        ],
     },
     'images': ['static/description/icon.png'],
     'installable': True,
